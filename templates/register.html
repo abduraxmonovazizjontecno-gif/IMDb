@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block title %}Ro'yxatdan o'tish — CINEMA{% endblock %}
+
+{% block content %}
+<div class="auth-wrap">
+    <div class="auth-card">
+        <h1>Ro'yxatdan o'tish</h1>
+        <div class="auth-sub">Hisob yarating va kino olamiga qo'shiling</div>
+        <form method="post" novalidate>
+            {% csrf_token %}
+            {% for field in form %}
+                {{ field }}
+                {% for error in field.errors %}
+                    <ul class="error"><li>{{ error }}</li></ul>
+                {% endfor %}
+            {% endfor %}
+            <button type="submit" class="btn btn-primary submit">Ro'yxatdan o'tish &rarr;</button>
+        </form>
+        <p class="auth-alt">Hisobingiz bormi? <a href="{% url 'login' %}">Kirish</a></p>
+    </div>
+</div>
+{% endblock %}

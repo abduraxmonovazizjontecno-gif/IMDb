@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block title %}Profilni tahrirlash — CINEMA{% endblock %}
+
+{% block content %}
+<div class="auth-wrap">
+    <div class="auth-card">
+        <h1>Profilni tahrirlash</h1>
+        <div class="auth-sub">Ma'lumotlaringizni yangilang</div>
+        <form method="post" enctype="multipart/form-data" novalidate>
+            {% csrf_token %}
+            {{ form.full_name }}
+            {{ form.email }}
+            <label style="font-size: 0.82rem; color: var(--muted); display: flex; flex-direction: column; gap: 0.5rem;">
+                Profil rasmi
+                {{ form.avatar }}
+            </label>
+            {% if form.errors %}
+                <ul class="error">
+                    {% for field in form %}{% for error in field.errors %}<li>{{ error }}</li>{% endfor %}{% endfor %}
+                    {% for error in form.non_field_errors %}<li>{{ error }}</li>{% endfor %}
+                </ul>
+            {% endif %}
+            <button type="submit" class="btn btn-primary submit">Saqlash</button>
+        </form>
+        <p class="auth-alt" style="margin-top: 1.2rem;"><a href="{% url 'profile' %}">&larr; Profilga qaytish</a></p>
+    </div>
+</div>
+{% endblock %}

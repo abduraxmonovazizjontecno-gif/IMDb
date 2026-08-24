@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+
+{% block title %}Qidirish — CINEMA{% endblock %}
+
+{% block content %}
+<section class="hero search-hero" aria-label="Qidiruv">
+    <div class="label"><span class="dot"></span> Qidiruv va filtrlar</div>
+    <h1>O'zingizga kerakli<br><span class="grad">filmni</span> toping.</h1>
+    <form class="hero-search" method="get" action="{% url 'search' %}" role="search">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+            <circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.5" y2="16.5"/>
+        </svg>
+        <input type="text" name="q" value="{{ q }}" placeholder="Nom, aktyor, janr, til, davlat...">
+        <button type="submit" class="btn btn-primary btn-sm">Izlash</button>
+    </form>
+</section>
+
+<section id="all" class="reveal" aria-label="Qidiruv natijalari">
+    <div class="section-head">
+        <div>
+            <h2>Natijalar</h2>
+            <p class="sub">{% if q %}«{{ q }}» bo'yicha {% endif %}topilgan filmlar: {{ movies.paginator.count }}</p>
+        </div>
+    </div>
+    <div class="section-line"></div>
+
+    <div class="toolbar">
+        <nav class="filters" aria-label="Janr filtrlar">
+            <a href="{% url 'search' %}{% if q %}?q={{ q|urlencode }}{% endif %}#all"
+               class="filter-link {% if not selected_genre %}active{% endif %}">Barchasi</a>
+            {% for genre in genres %}
+            <a href="{% url 'search' %}?genre={{ genre.slug }}{% if q %}&q={{ q|urlencode }}{% endif %}#all"
+               class="filter-link {% if selected_genre == genre.slug %}active{% endif %}">{{ genre.name }}</a>
+            {% endfor %}
+        </nav>
+        <div class="filters sort-filters">
+            <label for="year-select" class="sr-only">Yil bo'yicha filtrash</label>
+            <select id="year-select" name="year" form="sort-form" class="sort-select">
+                <option value="">Barcha yillar</option>
+                {% for y in years %}
+                <option value="{{ y|date:'Y' }}" {% if selected_year == y|date:'Y' %}selected{% endif %}>{{ y|date:'Y' }}</option>
+                {% endfor %}
+            </select>
+            <label for="sort-select" class="sr-only">Saralash</label>
+            <select id="sort-select" name="sort" form="sort-form" class="sort-select">
+                <option value="" {% if not selected_sort %}selected{% endif %}>Baho bo'yicha</option>
+                <option value="new" {% if selected_sort == 'new' %}selected{% endif %}>Yangi avval</option>
+                <option value="old" {% if selected_sort == 'old' %}selected{% endif %}>Eski avval</option>
+                <option value="title" {% if selected_sort == 'title' %}selected{% endif %}>Nom bo'yicha</option>
+            </select>
+            <form id="sort-form" method="get" action="{% url 'search' %}#all" hidden>
+                <input type="hidden" name="q" value="{{ q }}">
+                <input type="hidden" name="genre" value="{{ selected_genre }}">
+            </form>
+            <script>
+            (function () {
+                var form = document.getElementById('sort-form');
+                if (!form) return;
+                document.querySelectorAll('select[form="sort-form"]').forEach(function (sel) {
+                    sel.addEventListener('change', function () { form.submit(); });
+                });
+            })();
+            </script>
+        </div>
+        {% if q or selected_genre or selected_year or selected_sort %}
+        <a href="{% url 'search' %}#all" class="btn btn-ghost btn-sm" title="Barcha filtrlarni tozalash">Tozalash &times;</a>
+        {% endif %}
+    </div>
+
+    {% if movies %}
+    {% load cache %}
+    {% cache 120 search_grid page_obj.number q selected_genre selected_year selected_sort %}
+    <ul class="grid" role="list">
+        {% for movie in movies %}
+            {% include 'partials/movie_card.html' with movie=movie %}
+        {% endfor %}
+    </ul>
+    {% endcache %}
+
+    {% if is_paginated %}
+    <nav class="pagination" aria-label="Sahifalar">
+        {% if page_obj.has_previous %}
+            <a class="page-btn" href="?page={{ page_obj.previous_page_number }}{% if q %}&q={{ q|urlencode }}{% endif %}{% if selected_genre %}&genre={{ selected_genre }}{% endif %}{% if selected_year %}&year={{ selected_year }}{% endif %}{% if selected_sort %}&sort={{ selected_sort }}{% endif %}#all" aria-label="Oldingi sahifa">&larr;</a>
+        {% endif %}
+        {% for num in page_obj.paginator.page_range %}
+            {% if num == page_obj.number %}
+                <span class="page-btn current" aria-current="page">{{ num }}</span>
+            {% elif num > page_obj.number|add:"-2" and num < page_obj.number|add:"2" %}
+                <a class="page-btn" href="?page={{ num }}{% if q %}&q={{ q|urlencode }}{% endif %}{% if selected_genre %}&genre={{ selected_genre }}{% endif %}{% if selected_year %}&year={{ selected_year }}{% endif %}{% if selected_sort %}&sort={{ selected_sort }}{% endif %}#all">{{ num }}</a>
+            {% endif %}
+        {% endfor %}
+        {% if page_obj.has_next %}
+            <a class="page-btn" href="?page={{ page_obj.next_page_number }}{% if q %}&q={{ q|urlencode }}{% endif %}{% if selected_genre %}&genre={{ selected_genre }}{% endif %}{% if selected_year %}&year={{ selected_year }}{% endif %}{% if selected_sort %}&sort={{ selected_sort }}{% endif %}#all" aria-label="Keyingi sahifa">&rarr;</a>
+        {% endif %}
+    </nav>
+    {% endif %}
+
+    {% else %}
+    <div class="empty" role="status">Hech narsa topilmadi — qidiruv yoki filterni o'zgartirib ko'ring.</div>
+    {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,41 @@
+<li class="card">
+    <a href="{% url 'movie_detail' movie.slug %}" style="display: block; text-decoration: none; color: inherit;">
+        <div class="poster {% if not movie.poster %}no-image{% endif %}">
+            {% if movie.poster %}
+                <picture>
+                    {% if movie.poster_avif %}<source type="image/avif" srcset="{{ movie.poster_avif }}">{% endif %}
+                    {% if movie.poster_webp %}<source type="image/webp" srcset="{{ movie.poster_webp }}">{% endif %}
+                    <img src="{{ movie.poster.url }}" alt="{{ movie.title }}" loading="lazy">
+                </picture>
+            {% else %}
+                <span class="poster-mono">{{ movie.title|first|upper }}</span>
+            {% endif %}
+            {% if movie.rating_count and movie.rating %}
+                <span class="rating-badge">&#9733; {{ movie.rating }} <span class="rating-ct">{{ movie.rating_count }} ovoz</span></span>
+            {% endif %}
+            <span class="play-hint">
+                <span class="ring">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M8 5v14l11-7z"/>
+                    </svg>
+                </span>
+                <span class="play-label">Tomosha</span>
+            </span>
+        </div>
+        <div class="card-body">
+            <h3 class="card-title">{{ movie.title }}</h3>
+            <div class="meta">
+                <span>{{ movie.release_date|date:"Y" }}</span>
+                <span class="sep">&#183;</span>
+                <span>{{ movie.duration_minutes }} daq</span>
+            </div>
+            {% if movie.genres.all %}
+            <div class="genres">
+                {% for genre in movie.genres.all|slice:":3" %}
+                <span class="genre-chip">{{ genre.name }}</span>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+    </a>
+</li>

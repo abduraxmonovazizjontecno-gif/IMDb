@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+
+{% block title %}Profil — CINEMA{% endblock %}
+
+{% block content %}
+<div class="profile-head">
+    {% if user.avatar %}
+        <img class="avatar-lg" src="{{ user.avatar.url }}" alt="{{ user.full_name }}">
+    {% else %}
+        <span class="avatar-lg">{{ user.full_name|first|upper }}</span>
+    {% endif %}
+    <div>
+        <h1>{{ user.full_name }}</h1>
+        <div class="prof-meta">{{ user.phone_number }}{% if user.email %} &#183; {{ user.email }}{% endif %} &#183; {{ ratings|length }} ta baho</div>
+    </div>
+    <div style="margin-left: auto; display: flex; gap: 0.7rem; flex-wrap: wrap;">
+        <a href="{% url 'profile_edit' %}" class="btn btn-outline btn-sm">Profilni tahrirlash</a>
+        <a href="{% url 'password_change' %}" class="btn btn-outline btn-sm">Parolni o'zgartirish</a>
+    </div>
+</div>
+<div class="section-line"></div>
+
+<div class="section-head">
+    <div>
+        <h2>Mening baholarim</h2>
+        <div class="sub">Bergan baholaringiz ro'yxati</div>
+    </div>
+</div>
+
+{% if ratings %}
+    {% for rating in ratings %}
+    <div class="prof-item">
+        <div style="max-width: 60%;">
+            <div class="p-title"><a href="{% url 'movie_detail' rating.movie.slug %}">{{ rating.movie.title }}</a></div>
+            <div class="p-meta">{{ rating.movie.release_date|date:"Y" }} &#183; {{ rating.updated_at|date:"d.m.Y" }} da baholandi</div>
+        </div>
+        <div class="p-score">
+            <div class="p-avg">&#9733; {{ rating.value }}/10</div>
+            {% if rating.movie.rating %}
+            <div class="p-meta">O'rtacha: <small style="color: var(--accent);">{{ rating.movie.rating }}</small> ({{ rating.movie.rating_count }})</div>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+{% else %}
+<div class="prof-empty">Hozircha biron film baholamadingiz. Filmlar sahifasidan boshlang!</div>
+{% endif %}
+
+<div class="section-head" style="margin-top: 4rem;">
+    <div>
+        <h2>Mening ro'yxatim ({{ watchlist|length }})</h2>
+        <div class="sub">Saqlangan filmlar — kino sahifasidagi "Saqlash" tugmasi bilan qo'shiladi</div>
+    </div>
+</div>
+
+{% if watchlist %}
+    {% for item in watchlist %}
+    <div class="prof-item">
+        <div>
+            <div class="p-title"><a href="{% url 'movie_detail' item.movie.slug %}">{{ item.movie.title }}</a></div>
+            <div class="p-meta">{{ item.movie.release_date|date:"Y" }} &#183; {{ item.movie.duration_minutes }} daqiqa &#183; {{ item.created_at|date:"d.m.Y" }} da saqlangan</div>
+        </div>
+        <form method="post" action="{% url 'toggle_watchlist' item.movie.slug %}">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{{ request.path }}">
+            <button type="submit" class="btn btn-outline btn-sm">Olib tashlash</button>
+        </form>
+    </div>
+    {% endfor %}
+{% else %}
+<div class="prof-empty">Ro'yxatingiz bo'sh. Yaxshi filmlarni saqlashni unutmang!</div>
+{% endif %}
+{% endblock %}

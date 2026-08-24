@@ -1,0 +1,286 @@
+{% extends 'base.html' %}
+
+{% block title %}CINEMA — Bosh sahifa{% endblock %}
+
+{% block extra_head %}
+{% if banners %}
+{% with b=banners.0.banner %}
+<link rel="preload" as="image" href="{% if b %}{{ b.url }}{% else %}{{ banners.0.poster.url }}{% endif %}" fetchpriority="high">
+{% endwith %}
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<section class="hero" aria-label="Khush kelibsiz">
+    <div class="label"><span class="dot"></span> Nashr 001 — 2023</div>
+    <h1>Kino — bu eng kichik<br><span class="grad">qorong'ilik</span>dagi eng katta nur.</h1>
+    <p>Minimal ekran. Minimal ovoz. Faqat hikoya qoladi. Saytimiz ekranni shovqindan tozalab, faqat filmga qoldiradi.</p>
+
+    <div class="hero-meta reveal">
+        <div class="stat">
+            <div class="num"><span>{{ movies.paginator.count }}</span>+</div>
+            <div class="cap">Film katalogda</div>
+        </div>
+        <div class="stat">
+            <div class="num"><span>{{ genres|length }}</span></div>
+            <div class="cap">Janr</div>
+        </div>
+        {% if top_rated %}
+        <div class="stat">
+            <div class="num"><span>&#9733; {{ top_rated.0.rating }}</span></div>
+            <div class="cap">Eng yaxshi baho</div>
+        </div>
+        <div class="stat">
+            <div class="num"><span>{{ top_rated.0.title }}</span></div>
+            <div class="cap">Lider film</div>
+        </div>
+        {% else %}
+        <div class="stat">
+            <div class="num"><span>24/7</span></div>
+            <div class="cap">Ochiq</div>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+{% if banners %}
+<section id="new" class="reveal" aria-label="Yangi kinolar">
+    <div class="banner-slider" id="banner-slider" tabindex="0" role="region" aria-label="Yangi kinolar slayderi">
+        {% for movie in banners %}
+        <article class="banner-slide {% if forloop.first %}active{% endif %}" data-index="{{ forloop.counter0 }}">
+            {% if movie.banner %}
+            <picture class="banner-bg">
+                {% if movie.banner_avif %}<source type="image/avif" srcset="{{ movie.banner_avif }}">{% endif %}
+                {% if movie.banner_webp %}<source type="image/webp" srcset="{{ movie.banner_webp }}">{% endif %}
+                <img src="{{ movie.banner.url }}" alt="{{ movie.title }} — banner" {% if forloop.first %}fetchpriority="high"{% else %}loading="lazy"{% endif %} width="1920" height="1080">
+            </picture>
+            {% else %}
+            <picture class="banner-bg">
+                {% if movie.poster_avif %}<source type="image/avif" srcset="{{ movie.poster_avif }}">{% endif %}
+                {% if movie.poster_webp %}<source type="image/webp" srcset="{{ movie.poster_webp }}">{% endif %}
+                <img src="{{ movie.poster.url }}" alt="{{ movie.title }} — poster" {% if forloop.first %}fetchpriority="high"{% else %}loading="lazy"{% endif %} width="500" height="750">
+            </picture>
+            {% endif %}
+            <div class="banner-overlay" aria-hidden="true"></div>
+            <div class="banner-content">
+                <div class="label"><span class="dot"></span> Yangi kino</div>
+                <h2 class="banner-title">{{ movie.title }}</h2>
+                <div class="banner-meta">
+                    <span>{{ movie.release_date|date:"Y" }}</span>
+                    {% if movie.genres.all %}
+                    <span>{% for genre in movie.genres.all|slice:":3" %}{{ genre.name }}{% if not forloop.last %}, {% endif %}{% endfor %}</span>
+                    {% endif %}
+                    {% if movie.rating %}<span class="banner-rating">&#9733; {{ movie.rating }}</span>{% endif %}
+                </div>
+                <div class="banner-actions">
+                    <a href="{{ movie.get_absolute_url }}" class="btn btn-primary">&#9654; Treyler</a>
+                    <a href="{{ movie.get_absolute_url }}" class="btn btn-outline">Batafsil</a>
+                </div>
+            </div>
+        </article>
+        {% endfor %}
+        <button type="button" class="banner-nav prev" aria-label="Oldingi film">&#10094;</button>
+        <button type="button" class="banner-nav next" aria-label="Keyingi film">&#10095;</button>
+        <div class="banner-thumbs" role="tablist" aria-label="Slayd ko'rsatkichlari">
+            {% for movie in banners %}
+            <button type="button" class="banner-thumb {% if forloop.first %}active{% endif %}" data-index="{{ forloop.counter0 }}" role="tab" aria-label="{{ movie.title }}" aria-selected="{% if forloop.first %}true{% else %}false{% endif %}">
+                <img src="{{ movie.poster.url }}" alt="{{ movie.title }}" loading="lazy">
+            </button>
+            {% endfor %}
+        </div>
+        <div class="banner-dots" role="tablist" aria-label="Slayd ko'rsatkichlari">
+            {% for movie in banners %}
+            <button type="button" class="banner-dot {% if forloop.first %}active{% endif %}" data-index="{{ forloop.counter0 }}" role="tab" aria-label="{{ movie.title }}" aria-selected="{% if forloop.first %}true{% else %}false{% endif %}"></button>
+            {% endfor %}
+        </div>
+        <div class="banner-progress" aria-hidden="true"><span id="banner-progress-bar"></span></div>
+    </div>
+</section>
+{% endif %}
+
+{% if top_rated %}
+<section class="editorial reveal" aria-label="Tanlanganlar">
+    <div class="section-head">
+        <div>
+            <h2>Tanlanganlar</h2>
+            <p class="sub">Kengashli va eng yaxshi baholangan kinolar</p>
+        </div>
+        <a href="{% url 'leaderboard' %}" class="btn btn-outline btn-sm">Liderboard</a>
+    </div>
+    <div class="feature-grid">
+        {% for movie in top_rated %}
+        <article class="feature-card">
+            <a href="{{ movie.get_absolute_url }}" class="feature-link">
+                <div class="feature-poster {% if not movie.poster %}no-image{% endif %}">
+                    {% if movie.poster %}
+                        <picture>
+                            {% if movie.poster_avif %}<source type="image/avif" srcset="{{ movie.poster_avif }}">{% endif %}
+                            {% if movie.poster_webp %}<source type="image/webp" srcset="{{ movie.poster_webp }}">{% endif %}
+                            <img src="{{ movie.poster.url }}" alt="{{ movie.title }}" loading="lazy" width="400" height="600">
+                        </picture>
+                    {% else %}
+                        <span class="poster-mono">{{ movie.title|first|upper }}</span>
+                    {% endif %}
+                    <span class="feature-rank" aria-hidden="true">#{{ forloop.counter }}</span>
+                </div>
+                <div class="feature-copy">
+                    <div class="feature-kicker">Top {{ forloop.counter }}</div>
+                    <h3>{{ movie.title }}</h3>
+                    <div class="feature-meta">
+                        <span>{{ movie.release_date|date:"Y" }}</span>
+                        <span aria-hidden="true">&bull;</span>
+                        <span>★ {{ movie.rating }}</span>
+                    </div>
+                </div>
+            </a>
+        </article>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+{% if genres %}
+<section class="genre-showcase reveal" aria-label="Janrlar">
+    <div class="section-head">
+        <div>
+            <h2>Janrlar</h2>
+            <p class="sub">Katalogni maqbullashtiruvchi yo'nalishlar</p>
+        </div>
+    </div>
+    <div class="genre-pills">
+        {% for genre in genres %}
+        <a href="{% url 'search' %}?genre={{ genre.slug }}" class="genre-pill">{{ genre.name }}</a>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+{% if trending %}
+{% load cache %}
+<section id="trending" class="reveal" aria-label="Trenddagi filmlar">
+    <div class="section-head">
+        <div>
+            <h2>Trenddagi filmlar</h2>
+            <p class="sub">Bugun eng ko'p tomosha qilinayotganlar</p>
+        </div>
+    </div>
+    <div class="section-line"></div>
+    {% cache 120 trending_films %}
+    <ul class="grid">
+        {% for movie in trending %}
+            {% include 'partials/movie_card.html' with movie=movie %}
+        {% endfor %}
+    </ul>
+    {% endcache %}
+</section>
+{% endif %}
+
+<section id="all" class="reveal" aria-label="Barcha filmlar">
+    <div class="section-head">
+        <div>
+            <h2>Barcha filmlar</h2>
+            <p class="sub">Katalogdagi barcha filmlar — qidiruv va filtrlar <a href="{% url 'search' %}">Qidirish</a> sahifasida</p>
+        </div>
+    </div>
+    <div class="section-line"></div>
+
+    {% if movies %}
+    {% load cache %}
+    {% cache 120 movie_grid page_obj.number q selected_genre selected_year selected_sort %}
+    <ul class="grid">
+        {% for movie in movies %}
+            {% include 'partials/movie_card.html' with movie=movie %}
+        {% endfor %}
+    </ul>
+    {% endcache %}
+
+    {% if is_paginated %}
+    <nav class="pagination" aria-label="Sahifalar">
+        {% if page_obj.has_previous %}
+            <a class="page-btn" href="?page={{ page_obj.previous_page_number }}#all" aria-label="Oldingi sahifa">&larr;</a>
+        {% endif %}
+        {% for num in page_obj.paginator.page_range %}
+            {% if num == page_obj.number %}
+                <span class="page-btn current" aria-current="page">{{ num }}</span>
+            {% elif num > page_obj.number|add:"-2" and num < page_obj.number|add:"2" %}
+                <a class="page-btn" href="?page={{ num }}#all">{{ num }}</a>
+            {% endif %}
+        {% endfor %}
+        {% if page_obj.has_next %}
+            <a class="page-btn" href="?page={{ page_obj.next_page_number }}#all" aria-label="Keyingi sahifa">&rarr;</a>
+        {% endif %}
+    </nav>
+    {% endif %}
+
+    {% else %}
+    <div class="empty">Katalogda filmlar yo'q.</div>
+    {% endif %}
+</section>
+
+<script>
+(function () {
+    var slider = document.getElementById('banner-slider');
+    if (!slider) return;
+    var slides = slider.querySelectorAll('.banner-slide');
+    var dots = slider.querySelectorAll('.banner-dot');
+    var thumbs = slider.querySelectorAll('.banner-thumb');
+    var bar = document.getElementById('banner-progress-bar');
+    var index = 0, timer = null, total = slides.length, startX = null;
+
+    function go(i) {
+        index = (i + total) % total;
+        slides.forEach(function (s, k) { s.classList.toggle('active', k === index); });
+        dots.forEach(function (d, k) { d.classList.toggle('active', k === index); });
+        thumbs.forEach(function (t, k) { t.classList.toggle('active', k === index); });
+    }
+
+    function next() { go(index + 1); }
+    function prev() { go(index - 1); }
+
+    function runProgress() {
+        if (!bar) return;
+        bar.classList.remove('run');
+        void bar.offsetWidth;
+        bar.classList.add('run');
+    }
+
+    function restart() {
+        stop();
+        timer = setInterval(next, 6000);
+        runProgress();
+    }
+
+    function stop() {
+        clearInterval(timer);
+        if (bar) bar.classList.remove('run');
+    }
+
+    slider.querySelector('.banner-nav.prev').addEventListener('click', function () { prev(); restart(); });
+    slider.querySelector('.banner-nav.next').addEventListener('click', function () { next(); restart(); });
+    dots.forEach(function (d) {
+        d.addEventListener('click', function () { go(parseInt(d.dataset.index, 10)); restart(); });
+    });
+    thumbs.forEach(function (t) {
+        t.addEventListener('click', function () { go(parseInt(t.dataset.index, 10)); restart(); });
+    });
+    slider.addEventListener('mouseenter', stop);
+    slider.addEventListener('mouseleave', restart);
+    slider.addEventListener('touchstart', function (e) {
+        startX = e.touches[0].clientX;
+        stop();
+    }, { passive: true });
+    slider.addEventListener('touchend', function (e) {
+        if (startX === null) return;
+        var dx = e.changedTouches[0].clientX - startX;
+        startX = null;
+        if (Math.abs(dx) > 50) { dx < 0 ? next() : prev(); }
+        restart();
+    }, { passive: true });
+    slider.addEventListener('keydown', function (e) {
+        if (e.key === 'ArrowRight') { next(); restart(); }
+        else if (e.key === 'ArrowLeft') { prev(); restart(); }
+    });
+    restart();
+})();
+</script>
+{% endblock %}

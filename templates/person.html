@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ person.full_name }} — CINEMA{% endblock %}
+{% block description %}{{ person.full_name }} — filmografiyasi, filmlari va baholari.{% endblock %}
+{% block og_type %}profile{% endblock %}
+{% block og_title %}{{ person.full_name }}{% endblock %}
+{% block og_image %}{% if person.photo %}{{ request.scheme }}://{{ request.get_host }}{{ person.photo.url }}{% endif %}{% endblock %}
+
+{% block content %}
+<a href="{% url 'index' %}" class="back">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
+    </svg>
+    Barcha filmlar
+</a>
+
+<div class="person-head">
+    <div class="person-photo">
+        {% if person.photo %}<img src="{{ person.photo.url }}" alt="{{ person.full_name }}">{% else %}Rasm yo'q{% endif %}
+    </div>
+    <div class="person-info">
+        <h1>{{ person.full_name }}</h1>
+        <div class="person-meta">
+            {% if person.birth_date %}<span>Tug'ilgan sana: <span class="val">{{ person.birth_date|date:"d.m.Y" }}</span></span>{% endif %}
+            {% if person.birth_place %}<span>Tug'ilgan joy: <span class="val">{{ person.birth_place }}</span></span>{% endif %}
+        </div>
+        {% if person.bio %}<p class="person-bio">{{ person.bio }}</p>{% endif %}
+    </div>
+</div>
+
+{% if known_for %}
+<section>
+    <div class="section-head">
+        <div>
+            <h2>Tanilgan filmlari</h2>
+            <div class="sub">Eng yuqori baholangan 4 ta film</div>
+        </div>
+    </div>
+    <div class="grid">
+        {% for credit in known_for %}
+        {% include 'partials/movie_card.html' with movie=credit.movie %}
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+{% if credit_groups %}
+<section>
+    <div class="section-head">
+        <div>
+            <h2>Filmografiya</h2>
+            <div class="sub">Ishtirok etgan barcha filmlar</div>
+        </div>
+    </div>
+    {% for role, items in credit_groups %}
+    <div class="cast-role" style="margin-top: 1.4rem;">{{ role }}lar</div>
+    {% for credit in items %}
+    <a class="film-line" href="{% url 'movie_detail' credit.movie.slug %}">
+        <span class="fl-year">{{ credit.movie.release_date|date:"Y" }}</span>
+        <span class="fl-title">{{ credit.movie.title }}</span>
+        {% if credit.character_name %}<span class="fl-char">{{ credit.character_name }}</span>{% endif %}
+        <span class="fl-rating">{% if credit.movie.rating %}&#9733; {{ credit.movie.rating }}{% endif %}</span>
+    </a>
+    {% endfor %}
+    {% endfor %}
+</section>
+{% else %}
+<div class="empty">Hozircha ishtiroki qayd etilmagan.</div>
+{% endif %}
+{% endblock %}

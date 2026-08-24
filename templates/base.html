@@ -1,0 +1,145 @@
+{% load static %}<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}CINEMA{% endblock %}</title>
+    <meta name="description" content="{% block description %}CINEMA — filmlar, foydalanuvchi baholari, sharhlar va liderboard. Eng yaxshi filmlar katalogi.{% endblock %}">
+    <link rel="canonical" href="{% block canonical %}{% endblock %}">
+    <link rel="icon" type="image/svg+xml" href="{% static 'favicon.svg' %}">
+    <meta property="og:site_name" content="CINEMA">
+    <meta property="og:type" content="{% block og_type %}website{% endblock %}">
+    <meta property="og:title" content="{% block og_title %}CINEMA{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}Filmlar, baholar va sharhlar{% endblock %}">
+    <meta property="og:image" content="{% block og_image %}{% endblock %}">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{% block twitter_title %}CINEMA{% endblock %}">
+    <meta name="twitter:description" content="{% block twitter_description %}CINEMA — filmlar, baholar va sharhlar{% endblock %}">
+    <meta name="twitter:image" content="{% block twitter_image %}{% endblock %}">
+    {% block extra_head %}{% endblock %}
+    {% if GOOGLE_TAG_ID %}
+    <script async src="https://www.googletagmanager.com/gtag/js?id={{ GOOGLE_TAG_ID }}"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', '{{ GOOGLE_TAG_ID }}');
+    </script>
+    {% endif %}
+    <meta name="theme-color" content="#060607">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="CINEMA">
+    <link rel="apple-touch-icon" href="{% static 'favicon.svg' %}">
+    <link rel="manifest" href="{% static 'manifest.json' %}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="{% static 'js/theme.js' %}" data-cfasync="false"></script>
+    <link rel="stylesheet" href="{% static 'css/main.css' %}">
+</head>
+<body>
+<a class="skip-link" href="#main">Asosiy kontentga o'tish</a>
+<header>
+    <div class="container nav">
+        <a href="{% url 'index' %}" class="logo" aria-label="CINEMA — Bosh sahifa">
+            <span class="logo-mark" aria-hidden="true">&#9670;</span>
+            <span class="logo-text">CINEMA</span>
+        </a>
+        <nav class="nav-links" aria-label="Asosiy navigatsiya">
+            <a href="{% url 'index' %}" class="nav-item {% if request.path == '/' or request.path|slice:':6' == '/film/' or request.path == '/search/' %}active{% endif %}">Filmlar</a>
+            <a href="{% url 'index' %}#trending" class="nav-item">Trend</a>
+            <a href="{% url 'leaderboard' %}" class="nav-item {% if request.path == '/leaderboard/' %}active{% endif %}">Liderlar</a>
+        </nav>
+        <div class="nav-search">
+            <button type="button" class="theme-toggle" id="theme-toggle" aria-label="Theme toggle" title="Dark/Light mode">
+                <svg class="theme-icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                    <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                </svg>
+                <svg class="theme-icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                </svg>
+            </button>
+            <a href="{% url 'search' %}" class="search-btn" title="Film qidirish" aria-label="Film qidirish">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                    <circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.5" y2="16.5"/>
+                </svg>
+            </a>
+        </div>
+        <button type="button" class="nav-burger" id="nav-burger" aria-label="Menyu" aria-expanded="false" aria-controls="drawer">
+            <span aria-hidden="true"></span><span aria-hidden="true"></span><span aria-hidden="true"></span>
+        </button>
+        <div class="nav-auth">
+            {% if user.is_authenticated %}
+                {% if user.is_staff %}<a href="/admin/" class="nav-link-plain">Admin</a>{% endif %}
+                <a href="{% url 'profile' %}" class="user-chip">
+                    {% if user.avatar %}<img class="avatar" src="{{ user.avatar.url }}" alt="{{ user.full_name }}">{% else %}<span class="avatar">{{ user.full_name|first|upper }}</span>{% endif %}
+                    {{ user.full_name }}
+                </a>
+                <form method="post" action="{% url 'logout' %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-outline btn-sm">Chiqish</button>
+                </form>
+            {% else %}
+                <a href="{% url 'login' %}" class="nav-link-plain">Kirish</a>
+                <a href="{% url 'register' %}" class="btn btn-primary btn-sm">Ro'yxatdan o'tish</a>
+            {% endif %}
+        </div>
+    </div>
+</header>
+
+<div class="drawer-overlay" id="drawer-overlay" hidden></div>
+<aside class="drawer" id="drawer" aria-label="Mobil menyu">
+    <nav aria-label="Mobil navigatsiya">
+        <a href="{% url 'index' %}" class="drawer-link {% if request.path == '/' %}active{% endif %}">Filmlar</a>
+        <a href="{% url 'index' %}#trending" class="drawer-link">Trend</a>
+        <a href="{% url 'leaderboard' %}" class="drawer-link {% if request.path == '/leaderboard/' %}active{% endif %}">Liderlar</a>
+        <a href="{% url 'search' %}" class="drawer-link {% if request.path == '/search/' %}active{% endif %}">Qidirish</a>
+    </nav>
+    <div class="drawer-sep"></div>
+    {% if user.is_authenticated %}
+    <nav aria-label="Foydalanuvchi menyu">
+        <a href="{% url 'profile' %}" class="drawer-link">Profil — {{ user.full_name }}</a>
+        {% if user.is_staff %}<a href="/admin/" class="drawer-link">Admin</a>{% endif %}
+        <form method="post" action="{% url 'logout' %}">
+            {% csrf_token %}
+            <button type="submit" class="drawer-link drawer-btn">Chiqish</button>
+        </form>
+    </nav>
+    {% else %}
+    <nav aria-label="Autentifikatsiya">
+        <a href="{% url 'login' %}" class="drawer-link">Kirish</a>
+        <a href="{% url 'register' %}" class="drawer-link drawer-btn-primary">Ro'yxatdan o'tish</a>
+    </nav>
+    {% endif %}
+</aside>
+
+<main class="container" id="main">
+    {% if messages %}
+    <div class="flash-stack">
+        {% for message in messages %}
+        <div class="flash {{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% block content %}{% endblock %}
+</main>
+
+<footer>
+    <div class="footer-inner">
+        <div class="footer-brand">
+            <span class="brand">CINEMA</span>
+            <span class="footer-copy">&copy; {% now "Y" %} — barcha huquqlar himoyalangan</span>
+        </div>
+        <nav class="footer-nav" aria-label="Footer">
+            <a href="{% url 'index' %}">Filmlar</a>
+            <a href="{% url 'leaderboard' %}">Liderlar</a>
+            {% if not user.is_authenticated %}<a href="{% url 'register' %}">Ro'yxatdan o'tish</a>{% endif %}
+            {% if user.is_staff %}<a href="/admin/">Admin</a>{% endif %}
+        </nav>
+    </div>
+</footer>
+<script src="{% static 'js/main.js' %}" defer></script>
+<script src="{% static 'js/pwa.js' %}" defer></script>
+</body>
+</html>

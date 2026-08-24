@@ -1,0 +1,70 @@
+services:
+  - type: web
+    name: cinema
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput && python manage.py migrate && python manage.py optimize_posters
+    startCommand: gunicorn IMDb.wsgi --bind 0.0.0.0:$PORT --workers 1 --threads 4 --timeout 60
+    envVars:
+      - key: DJANGO_DEBUG
+        value: "False"
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+      - key: DJANGO_ALLOWED_HOSTS
+        value: ".onrender.com,localhost"
+      - key: DJANGO_SECURE_SSL_REDIRECT
+        value: "True"
+      - key: DJANGO_CSRF_TRUSTED_ORIGINS
+        value: "https://cinema.onrender.com"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: cinema-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          name: cinema-redis
+          type: redis
+          property: connectionString
+      - key: DJANGO_EMAIL_BACKEND
+        value: django.core.mail.backends.smtp.EmailBackend
+      # Brevo (bepul 300 ta/ku) yoki boshqa SMTP:
+      #   DJANGO_EMAIL_HOST=smtp-relay.brevo.com
+      #   DJANGO_EMAIL_HOST_USER=<brevo-login>
+      #   DJANGO_EMAIL_HOST_PASSWORD=<brevo-key>
+      #   DJANGO_EMAIL_PORT=587
+      #   DJANGO_DEFAULT_FROM_EMAIL=noreply@domen.uz
+      - key: DJANGO_EMAIL_HOST
+        sync: false
+      - key: DJANGO_EMAIL_HOST_USER
+        sync: false
+      - key: DJANGO_EMAIL_HOST_PASSWORD
+        sync: false
+      - key: DJANGO_DEFAULT_FROM_EMAIL
+        sync: false
+      # Cloudflare R2 media (filmlar posterlari o'chib ketmasligi uchun):
+      #   AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_S3_ENDPOINT_URL,
+      #   AWS_STORAGE_BUCKET_NAME, MEDIA_URL=https://pub-...r2.dev/
+      - key: AWS_ACCESS_KEY_ID
+        sync: false
+      - key: AWS_SECRET_ACCESS_KEY
+        sync: false
+      - key: AWS_S3_ENDPOINT_URL
+        sync: false
+      - key: AWS_STORAGE_BUCKET_NAME
+        sync: false
+      - key: MEDIA_URL
+        sync: false
+      # Xatolik kuzatuvi / analitika (ixtiyoriy)
+      - key: SENTRY_DSN
+        sync: false
+      - key: GOOGLE_TAG_ID
+        sync: false
+databases:
+  - name: cinema-db
+    plan: free
+    databaseName: cinema
+    user: cinema
+redis:
+  - name: cinema-redis
+    plan: free
+    maxmemoryPolicy: noeviction

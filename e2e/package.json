@@ -1,0 +1,12 @@
+{
+  "name": "cinema-e2e",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Brauzer smoke testlari (Playwright)",
+  "scripts": {
+    "e2e": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.51.0"
+  }
+}

@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block title %}Kirish — CINEMA{% endblock %}
+
+{% block content %}
+<div class="auth-wrap">
+    <div class="auth-card">
+        <h1>Kirish</h1>
+        <div class="auth-sub">Hisobingizga xush kelibsiz</div>
+        <form method="post" novalidate>
+            {% csrf_token %}
+            {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+            <input type="text" name="username" placeholder="Telefon raqam" required autofocus>
+            <input type="password" name="password" placeholder="Parol" required>
+            {% if form.errors %}
+                <ul class="error"><li>Telefon raqam yoki parol noto'g'ri</li></ul>
+            {% endif %}
+            <button type="submit" class="btn btn-primary submit">Kirish</button>
+        </form>
+        <p class="auth-alt" style="margin-top: 1rem;">Parolni unutdingizmi? <a href="{% url 'password_reset' %}">Parolni tiklash</a></p>
+        <p class="auth-alt">Akkauntingiz yo'qmi? <a href="{% url 'register' %}">Ro'yxatdan o'tish</a></p>
+    </div>
+</div>
+{% endblock %}

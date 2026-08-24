@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+
+{% block title %}Liderboard — CINEMA{% endblock %}
+
+{% block content %}
+<div class="lb-head reveal">
+    <div>
+        <h1>Liderboard</h1>
+        <div class="lb-sub">Foydalanuvchilar tomonidan eng yuqori baholangan filmlar</div>
+    </div>
+    <a href="{% url 'index' %}" class="btn btn-outline btn-sm">Barcha filmlar &rarr;</a>
+</div>
+<div class="section-line"></div>
+
+{% if movies %}
+{% if not page_obj.has_previous %}
+<div class="podium reveal">
+    {% for movie in movies|slice:":3" %}
+    <a class="podium-col col-{{ forloop.counter }}" href="{% url 'movie_detail' movie.slug %}">
+        <span class="podium-rank">{{ forloop.counter }}</span>
+        <span class="podium-cover">
+            {% if movie.poster %}<picture>
+                {% if movie.poster_avif %}<source type="image/avif" srcset="{{ movie.poster_avif }}">{% endif %}
+                {% if movie.poster_webp %}<source type="image/webp" srcset="{{ movie.poster_webp }}">{% endif %}
+                <img src="{{ movie.poster.url }}" alt="{{ movie.title }}" loading="lazy">
+            </picture>{% else %}<span class="poster-mono">{{ movie.title|first|upper }}</span>{% endif %}
+        </span>
+        <span class="podium-name">{{ movie.title }}</span>
+        <span class="podium-rating">&#9733; {{ movie.rating }}</span>
+        <span class="podium-base"></span>
+    </a>
+    {% endfor %}
+</div>
+{% endif %}
+
+<div class="lb-list reveal">
+    {% for movie in movies %}
+    {% if not page_obj.has_previous and forloop.counter <= 3 %}
+        {% comment %}Podiumda ko'rsatilgan — ro'yxatda qaytarilmaydi{% endcomment %}
+    {% else %}
+    <div class="lb-row">
+        <div class="lb-rank">{% if not page_obj.has_previous %}{{ forloop.counter }}{% else %}{{ page_obj.start_index|add:forloop.counter0 }}{% endif %}</div>
+        <div class="lb-info">
+            <h3><a href="{% url 'movie_detail' movie.slug %}">{{ movie.title }}</a></h3>
+            <div class="lb-meta">{{ movie.release_date|date:"Y" }} &#183; {{ movie.duration_minutes }} daqiqa &#183; {{ movie.views_count }} ko'rish</div>
+        </div>
+        <div class="lb-score">
+            <div class="avg">&#9733; {{ movie.rating }}</div>
+            <div class="cnt">{{ movie.rating_count }} ovoz</div>
+        </div>
+        <div class="lb-bar">
+            <span style="width: {% widthratio movie.rating 10 100 %}%;"></span>
+        </div>
+    </div>
+    {% endif %}
+    {% endfor %}
+</div>
+{% else %}
+<div class="empty">Hozircha hech kim kino baholamagan. Birinchi bo'ling!</div>
+{% endif %}
+
+{% if is_paginated %}
+<div class="pagination">
+    {% if page_obj.has_previous %}
+    <a class="page-btn" href="?page={{ page_obj.previous_page_number }}">&larr;</a>
+    {% endif %}
+    {% for num in page_obj.paginator.page_range %}
+    <a class="page-btn {% if page_obj.number == num %}current{% endif %}" href="?page={{ num }}">{{ num }}</a>
+    {% endfor %}
+    {% if page_obj.has_next %}
+    <a class="page-btn" href="?page={{ page_obj.next_page_number }}">&rarr;</a>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}

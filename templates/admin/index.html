@@ -1,0 +1,305 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}{% if subtitle %}{{ subtitle }} | {% endif %}{{ title }} | {{ site_title }}{% endblock %}
+
+{% block branding %}
+    {% include "unfold/helpers/site_branding.html" %}
+{% endblock %}
+
+{% block content %}
+<style>
+    .admin-dashboard-shell {
+        background: linear-gradient(135deg, rgba(240, 196, 90, 0.03) 0%, rgba(90, 120, 200, 0.02) 100%);
+        min-height: 100vh;
+    }
+
+    .admin-dashboard-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        padding: 2rem;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+        border-radius: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+    }
+
+    .admin-dashboard-header h2 {
+        font-size: 2rem;
+        margin-top: 0.5rem;
+        background: linear-gradient(90deg, #fff, #e8dcc0);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .status-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: rgba(34, 197, 94, 0.1);
+        color: #22c55e;
+        padding: 0.5rem 1rem;
+        border-radius: 999px;
+        border: 1px solid rgba(34, 197, 94, 0.3);
+        font-size: 0.875rem;
+        font-weight: 600;
+    }
+
+    .status-pill::before {
+        content: '';
+        width: 8px;
+        height: 8px;
+        background: #22c55e;
+        border-radius: 50%;
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+    }
+
+    .dashboard-kpis {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .dashboard-stat-card {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02));
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        padding: 1.5rem;
+        backdrop-filter: blur(10px);
+        transition: all 0.3s ease;
+        overflow: hidden;
+        position: relative;
+    }
+
+    .dashboard-stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, transparent, #f0c45a, transparent);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .dashboard-stat-card:hover {
+        border-color: rgba(240, 196, 90, 0.3);
+        background: linear-gradient(135deg, rgba(240, 196, 90, 0.08), rgba(240, 196, 90, 0.02));
+        transform: translateY(-2px);
+    }
+
+    .dashboard-stat-card:hover::before {
+        opacity: 1;
+    }
+
+    .stat-label {
+        font-size: 0.875rem;
+        color: #878b93;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        font-weight: 600;
+    }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #f5f5f4;
+        font-family: 'Space Grotesk', sans-serif;
+    }
+
+    .stat-footer {
+        font-size: 0.8rem;
+        color: #878b93;
+        margin-top: 0.5rem;
+    }
+
+    .admin-panel {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        backdrop-filter: blur(10px);
+        overflow: hidden;
+    }
+
+    .panel-header {
+        padding: 1.5rem;
+        background: rgba(255, 255, 255, 0.03);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        font-weight: 600;
+        font-size: 1.125rem;
+    }
+
+    .admin-table {
+        width: 100%;
+    }
+
+    .admin-table thead {
+        background: rgba(255, 255, 255, 0.02);
+    }
+
+    .admin-table th {
+        padding: 1rem 1.5rem;
+        text-align: left;
+        font-weight: 600;
+        color: #878b93;
+        text-transform: uppercase;
+        font-size: 0.8rem;
+        letter-spacing: 0.05em;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .admin-table td {
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .admin-table tbody tr {
+        transition: background 0.2s ease;
+    }
+
+    .admin-table tbody tr:hover {
+        background: rgba(240, 196, 90, 0.05);
+    }
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.375rem 0.875rem;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: capitalize;
+    }
+
+    .status-badge.active {
+        background: rgba(34, 197, 94, 0.15);
+        color: #22c55e;
+        border: 1px solid rgba(34, 197, 94, 0.3);
+    }
+
+    .status-badge.draft {
+        background: rgba(239, 68, 68, 0.15);
+        color: #ef4444;
+        border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .status-badge.published {
+        background: rgba(59, 130, 246, 0.15);
+        color: #3b82f6;
+        border: 1px solid rgba(59, 130, 246, 0.3);
+    }
+
+    .rating-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.375rem;
+        color: #f0c45a;
+        font-weight: 600;
+    }
+
+    @media (min-width: 1024px) {
+        .admin-dashboard-bottom {
+            display: flex;
+            gap: 2rem;
+        }
+        .admin-dashboard-bottom > div:first-child {
+            flex: 1;
+        }
+    }
+</style>
+
+<div class="admin-dashboard-shell">
+    <header class="admin-dashboard-header">
+        <div>
+            <div class="eyebrow">{{ subtitle|default:"Overview" }}</div>
+            <h2>{{ title|default:"Cinema studio dashboard" }}</h2>
+        </div>
+        <div class="status-pill">Live</div>
+    </header>
+
+    {% if kpi_list and kpi_list|length %}
+    <div class="dashboard-kpis">
+        {% for kpi in kpi_list %}
+        <div class="dashboard-stat-card">
+            <div class="stat-label">{{ kpi.title|default:"Ko'rsatkich" }}</div>
+            <div class="stat-value">{{ kpi.metric|default:"—" }}</div>
+            {% if kpi.footer %}
+                <div class="stat-footer">{{ kpi.footer }}</div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="admin-panel">
+        <div class="panel-header">KPI statistika</div>
+        <div class="p-6 text-sm text-muted-foreground">Hozircha statistik ma'lumotlar mavjud emas.</div>
+    </div>
+    {% endif %}
+
+    {% if top_movies and top_movies|length %}
+    <div class="admin-panel">
+        <div class="panel-header">📊 Top filmlar — baho bo'yicha</div>
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th style="width: 40%;">Film nomi</th>
+                    <th style="width: 15%;">Yil</th>
+                    <th style="width: 15%;">Baho</th>
+                    <th style="width: 15%;">Ko'rishlar</th>
+                    <th style="width: 15%;">Holat</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for movie in top_movies %}
+                <tr>
+                    <td style="font-weight: 600;">
+                        <a href="{% url 'admin:apps_movie_change' movie.id %}" style="color: inherit; text-decoration: none;">
+                            {{ movie.title|default:"Noma'lum film" }}
+                        </a>
+                    </td>
+                    <td>{% if movie.release_date %}{{ movie.release_date|date:"Y" }}{% else %}—{% endif %}</td>
+                    <td>
+                        <span class="rating-badge">
+                            ★ {{ movie.rating|default:"0.0" }}
+                        </span>
+                    </td>
+                    <td>{{ movie.views_count|default:0 }}</td>
+                    <td>
+                        <span class="status-badge {% if movie.get_status_display == 'Published' %}published{% elif movie.get_status_display == 'Draft' %}draft{% else %}active{% endif %}">
+                            {{ movie.get_status_display|default:"Noma'lum holat" }}
+                        </span>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="px-6 py-4 text-center text-muted-foreground">
+                        📭 Hozircha top film ma'lumotlari yo'q.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="admin-panel">
+        <div class="panel-header">📊 Top filmlar — baho bo'yicha</div>
+        <div class="p-6 text-sm text-muted-foreground">Top film ro'yxati hozircha bo'sh.</div>
+    </div>
+    {% endif %}
+
+    <div class="admin-dashboard-bottom">
+        <div>
+            {% include "unfold/helpers/app_list_default.html" %}
+        </div>
+        {% include "unfold/helpers/history.html" %}
+    </div>
+</div>
+{% endblock %}
