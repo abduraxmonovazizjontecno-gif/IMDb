@@ -58,6 +58,18 @@ def _redirect_after_post(request, view_name, kwargs=None):
     return redirect(reverse(view_name, kwargs=kwargs))
 
 
+def _require_login_or_redirect(request, slug):
+    """Unauthenticated foydalanuvchini login sahifasiga yuboradi."""
+    next_url = reverse('movie_detail', kwargs={'slug': slug})
+    if url_has_allowed_host_and_scheme(
+        next_url,
+        allowed_hosts={request.get_host()},
+        require_https=request.is_secure(),
+    ):
+        return redirect(f"{reverse('login')}?next={next_url}")
+    return redirect('login')
+
+
 class IndexView(ListView):
     model = Movie
     template_name = 'index.html'
@@ -222,8 +234,7 @@ class RateMovieView(View):
     def post(self, request, slug):
         movie = get_object_or_404(Movie, slug=slug, status='published')
         if not request.user.is_authenticated:
-            next_url = reverse('movie_detail', kwargs={'slug': slug})
-            return redirect(f"{reverse('login')}?next={url_has_allowed_host_and_scheme(next_url, {request.get_host()}, request.is_secure()) and next_url or ''}")
+            return _require_login_or_redirect(request, slug)
         is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
         blocked = _rate_limited(request, is_ajax)
         if blocked:
@@ -258,8 +269,7 @@ class WatchlistToggleView(View):
     def post(self, request, slug):
         movie = get_object_or_404(Movie, slug=slug, status='published')
         if not request.user.is_authenticated:
-            next_url = reverse('movie_detail', kwargs={'slug': slug})
-            return redirect(f"{reverse('login')}?next={url_has_allowed_host_and_scheme(next_url, {request.get_host()}, request.is_secure()) and next_url or ''}")
+            return _require_login_or_redirect(request, slug)
         is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
         blocked = _rate_limited(request, is_ajax)
         if blocked:
@@ -281,8 +291,7 @@ class ReviewView(View):
     def post(self, request, slug):
         movie = get_object_or_404(Movie, slug=slug, status='published')
         if not request.user.is_authenticated:
-            next_url = reverse('movie_detail', kwargs={'slug': slug})
-            return redirect(f"{reverse('login')}?next={url_has_allowed_host_and_scheme(next_url, {request.get_host()}, request.is_secure()) and next_url or ''}")
+            return _require_login_or_redirect(request, slug)
         blocked = _rate_limited(request, False)
         if blocked:
             return blocked

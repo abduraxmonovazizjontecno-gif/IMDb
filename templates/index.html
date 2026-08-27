@@ -197,17 +197,17 @@
     {% if is_paginated %}
     <nav class="pagination" aria-label="Sahifalar">
         {% if page_obj.has_previous %}
-            <a class="page-btn" href="?page={{ page_obj.previous_page_number }}#all" aria-label="Oldingi sahifa">&larr;</a>
+            <a class="page-btn" href="?page={{ page_obj.previous_page_number }}{% if q %}&q={{ q|urlencode }}{% endif %}{% if selected_genre %}&genre={{ selected_genre }}{% endif %}{% if selected_year %}&year={{ selected_year }}{% endif %}{% if selected_sort %}&sort={{ selected_sort }}{% endif %}#all" aria-label="Oldingi sahifa">&larr;</a>
         {% endif %}
         {% for num in page_obj.paginator.page_range %}
             {% if num == page_obj.number %}
                 <span class="page-btn current" aria-current="page">{{ num }}</span>
             {% elif num > page_obj.number|add:"-2" and num < page_obj.number|add:"2" %}
-                <a class="page-btn" href="?page={{ num }}#all">{{ num }}</a>
+                <a class="page-btn" href="?page={{ num }}{% if q %}&q={{ q|urlencode }}{% endif %}{% if selected_genre %}&genre={{ selected_genre }}{% endif %}{% if selected_year %}&year={{ selected_year }}{% endif %}{% if selected_sort %}&sort={{ selected_sort }}{% endif %}#all">{{ num }}</a>
             {% endif %}
         {% endfor %}
         {% if page_obj.has_next %}
-            <a class="page-btn" href="?page={{ page_obj.next_page_number }}#all" aria-label="Keyingi sahifa">&rarr;</a>
+            <a class="page-btn" href="?page={{ page_obj.next_page_number }}{% if q %}&q={{ q|urlencode }}{% endif %}{% if selected_genre %}&genre={{ selected_genre }}{% endif %}{% if selected_year %}&year={{ selected_year }}{% endif %}{% if selected_sort %}&sort={{ selected_sort }}{% endif %}#all" aria-label="Keyingi sahifa">&rarr;</a>
         {% endif %}
     </nav>
     {% endif %}
