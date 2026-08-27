@@ -1,5 +1,7 @@
 import logging
 
+from django.views.decorators.cache import cache_page
+from django.utils.decorators import method_decorator
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import login
@@ -104,6 +106,8 @@ class IndexView(ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        from django.core.cache import cache
+
         context['trending'] = (
             Movie.objects.filter(status='published', rating__isnull=False)
             .order_by('-rating', '-rating_count', '-views_count')
@@ -116,14 +120,15 @@ class IndexView(ListView):
             .order_by('-release_date')
             .prefetch_related('genres')[:5]
         )
-        context['genres'] = Genre.objects.all()
+        context['genres'] = cache.get_or_set('genres_list', lambda: list(Genre.objects.all()), 3600)
         context['q'] = self.request.GET.get('q', '')
         context['selected_genre'] = self.request.GET.get('genre', '')
         context['selected_year'] = self.request.GET.get('year', '')
         context['selected_sort'] = self.request.GET.get('sort', '')
-        context['years'] = (
-            Movie.objects.filter(status='published')
-            .dates('release_date', 'year', order='DESC')
+        context['years'] = cache.get_or_set(
+            'years_list',
+            lambda: list(Movie.objects.filter(status='published').dates('release_date', 'year', order='DESC')),
+            3600
         )
         context['top_rated'] = (
             Movie.objects.filter(status='published', rating__isnull=False)
