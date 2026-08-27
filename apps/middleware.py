@@ -30,7 +30,7 @@ class SecurityHeadersMiddleware:
         self._csp = (
             "default-src 'self'; "
             f"script-src {self._SCRIPT_SOURCES}; "
-            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+            "style-src 'self' https://fonts.googleapis.com; "
             "font-src 'self' https://fonts.gstatic.com; "
             f"img-src 'self' data: blob: {media_origin}; "
             f"frame-src {self._FRAME_SOURCES}; "

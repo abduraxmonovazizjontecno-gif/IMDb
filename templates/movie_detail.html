@@ -31,44 +31,6 @@
   ]
 }
 </script>
-<style>
-    /* --- smoothness layer, scoped to this page --- */
-    .film-poster img, .film-poster { transition: transform .4s cubic-bezier(.22,1,.36,1); }
-    .btn { transition: transform .18s ease, box-shadow .18s ease, background-color .18s ease, opacity .18s ease; }
-    .btn:hover:not(.disabled) { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(0,0,0,.18); }
-    .btn:active:not(.disabled) { transform: translateY(0); }
-    .btn.is-loading { opacity: .6; pointer-events: none; }
-
-    .chip, .meta-badge { transition: transform .15s ease, background-color .15s ease; }
-    .chip:hover { transform: translateY(-1px); }
-
-    .cast-item { transition: transform .2s ease, box-shadow .2s ease; }
-    .cast-item:hover { transform: translateY(-3px); }
-    .cast-ph img { transition: transform .3s ease; }
-    .cast-item:hover .cast-ph img { transform: scale(1.06); }
-
-    .stars .star svg { transition: transform .15s ease, color .2s ease; }
-    .stars .star:hover svg,
-    .stars .star.filled svg { transform: scale(1.12); }
-
-    /* video modal (dizayn: static/css/main.css dagi "Video modal" bo'limi) */
-
-    /* scroll reveal */
-    .reveal-item {
-        opacity: 0;
-        transform: translateY(14px);
-        transition: opacity .5s ease, transform .5s cubic-bezier(.22,1,.36,1);
-    }
-    .reveal-item.in-view { opacity: 1; transform: translateY(0); }
-
-    @media (prefers-reduced-motion: reduce) {
-        .film-poster img, .btn, .chip, .meta-badge, .cast-item, .cast-ph img,
-        .stars .star svg, .video-modal, .video-shell, .reveal-item {
-            transition: none !important;
-        }
-        .reveal-item { opacity: 1; transform: none; }
-    }
-</style>
 {% endblock %}
 
 {% block content %}
