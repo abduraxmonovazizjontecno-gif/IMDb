@@ -68,6 +68,8 @@ class CreditInline(admin.TabularInline):
 
 
 class MovieAdminForm(forms.ModelForm):
+    storage = default_storage
+
     trailer_upload = forms.FileField(
         required=False,
         label='Treyler faylni yuklash',
@@ -97,7 +99,7 @@ class MovieAdminForm(forms.ModelForm):
     def save(self, commit=True):
         trailer = self.cleaned_data.get('trailer_upload')
         if trailer:
-            storage = default_storage
+            storage = self.storage
             name = storage.save(f'trailers/{trailer.name}', trailer)
             url = storage.url(name)
             if url and not url.startswith(('http://', 'https://')):

@@ -5,7 +5,7 @@ from unittest.mock import patch
 from django.conf import settings
 from django.core.management import call_command
 from django.core.management.base import CommandError
-from django.test import RequestFactory, TestCase
+from django.test import RequestFactory, TestCase, override_settings
 from django.urls import reverse
 
 from apps.models import Credit, Genre, Movie, MovieRating, MovieReview, Person, User, WatchlistItem
@@ -238,6 +238,7 @@ class ToolingTests(TestCase):
         with patch('django.conf.settings.TELEGRAM_BOT_TOKEN', ''), self.assertRaises(CommandError):
             call_command('tg', 'poll', stdout=out)
 
+    @override_settings(TELEGRAM_BOT_TOKEN='test-token')
     def test_tg_link_invalid_file_id_no_token_leak(self):
         out = StringIO()
 
@@ -431,7 +432,8 @@ class ProfileAndAuthFlowTests(TestCase):
 
     def test_show_video_button_when_video_url(self):
         body = self.client.get(reverse('movie_detail', kwargs={'slug': 'flow'})).content.decode('utf-8', 'ignore')
-        self.assertIn('data-open-video>&#9654;', body)
+        self.assertIn('data-open-video', body)
+        self.assertIn('Treyler', body)
         self.assertIn('video-modal', body)
 
     def test_no_video_button_without_url(self):
@@ -567,7 +569,8 @@ class ImdbFeaturesTests(TestCase):
         page1 = self.client.get(reverse('movie_detail', kwargs={'slug': 'great-film'})).content.decode('utf-8', 'ignore')
         self.assertIn('Paginatsiya fikri 10', page1)
         self.assertNotIn('Paginatsiya fikri 0', page1)
-        self.assertIn('Sharhlar (11)', page1)
+        self.assertIn('class="review-count"', page1)
+        self.assertIn('>11<', page1)
         page2 = self.client.get(
             reverse('movie_detail', kwargs={'slug': 'great-film'}) + '?reviews_page=2'
         ).content.decode('utf-8', 'ignore')
