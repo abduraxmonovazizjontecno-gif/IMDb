@@ -86,7 +86,7 @@ class MovieAdminForm(forms.ModelForm):
         if trailer:
             max_size = 500 * 1024 * 1024
             if trailer.size > max_size:
-                raise forms.ValidationError(f'Fayl o\'lchami 500MB dan katta bo\'lmasligiga ruxsat yoq.')
+                raise forms.ValidationError('Fayl o\'lchami 500MB dan katta bo\'lmasligiga ruxsat yoq.')
         return trailer
 
     def clean_video_url(self):

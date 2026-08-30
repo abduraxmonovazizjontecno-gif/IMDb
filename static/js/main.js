@@ -1,6 +1,18 @@
 (function () {
     'use strict';
 
+    // Render-bloklovchi bo'lmasligi uchun shrift CSS ini JS orqali (CSP-safe) ulaymiz.
+    // CSP inline script'larni taqiqlaydi, shuning uchun tashqi fayldan qo'shamiz.
+    (function loadFonts() {
+        if (!window.matchMedia) return;
+        var href = 'https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap';
+        if (document.querySelector('link[href="' + href + '"]')) return;
+        var l = document.createElement('link');
+        l.rel = 'stylesheet';
+        l.href = href;
+        document.head.appendChild(l);
+    })();
+
     var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     if (!reduced) {

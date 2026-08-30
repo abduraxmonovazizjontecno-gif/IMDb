@@ -31,8 +31,8 @@
                 --surface: #f3f3f2;
                 --surface-2: #ececeb;
                 --text: #1a1a19;
-                --muted: #78716c;
-                --accent: #d97706;
+                --muted: #57534e;
+                --accent: #b45309;
                 --accent-soft: rgba(217, 119, 6, 0.1);
                 --accent-glow: rgba(217, 119, 6, 0.15);
                 --line: rgba(0, 0, 0, 0.08);
@@ -44,8 +44,8 @@
             --surface: #f3f3f2;
             --surface-2: #ececeb;
             --text: #1a1a19;
-            --muted: #78716c;
-            --accent: #d97706;
+            --muted: #57534e;
+            --accent: #b45309;
             --accent-soft: rgba(217, 119, 6, 0.1);
             --accent-glow: rgba(217, 119, 6, 0.15);
             --line: rgba(0, 0, 0, 0.08);
@@ -1208,6 +1208,37 @@
         .stars .star input { position: absolute; opacity: 0; pointer-events: none; }
         .stars .star svg { width: 30px; height: 30px; display: block; color: #3a3a3f; transition: color 0.15s, filter 0.15s; }
         .stars .star.filled svg { color: var(--accent); filter: drop-shadow(0 0 6px var(--accent-glow)); }
+        .stars .star.filled svg { animation: starPop 0.18s ease; }
+        @keyframes starPop { 0% { transform: scale(0.78); } 100% { transform: scale(1); } }
+
+        .rating-box-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 0.6rem;
+        }
+        .rating-avg {
+            font-size: 0.95rem;
+            color: var(--text);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+        .rating-avg .avg-star { color: var(--accent); }
+        .rating-avg .avg-count { color: var(--muted); font-size: 0.82rem; }
+        .rating-actions {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-top: 0.7rem;
+            flex-wrap: wrap;
+        }
+        .rating-hint {
+            color: var(--muted);
+            font-size: 0.85rem;
+            min-height: 1.2em;
+        }
 
         .your-rating {
             display: inline-flex;

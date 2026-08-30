@@ -42,12 +42,24 @@ class SecurityHeadersMiddleware:
             "form-action 'self'"
         )
 
+    def _is_admin(self, path):
+        from django.urls import Resolver404, resolve
+        try:
+            return resolve(path).app_name == 'admin'
+        except Resolver404:
+            return path.startswith('/admin/')
+
     def __call__(self, request):
         response = self.get_response(request)
-        response.setdefault('Content-Security-Policy', self._csp)
+        is_admin = self._is_admin(request.path)
         response.setdefault('Permissions-Policy',
                             'camera=(), microphone=(), geolocation=(), payment=(), usb=()')
         response.setdefault('Cross-Origin-Resource-Policy', 'same-origin')
-        if request.path.startswith('/admin/'):
+        if is_admin:
+            # Admin faqat autentlangan foydalanuvchilar uchun; qattiq CSP inline
+            # skriptlarni bloklab admin interaktivligini buzadi, shuning uchun
+            # CSP ni qo'llamaymiz, lekin indeksatsiyani taqiqlaymiz.
             response.setdefault('X-Robots-Tag', 'noindex, nofollow')
+            return response
+        response.setdefault('Content-Security-Policy', self._csp)
         return response

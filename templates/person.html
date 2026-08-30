@@ -16,7 +16,7 @@
 
 <div class="person-head">
     <div class="person-photo">
-        {% if person.photo %}<img src="{{ person.photo.url }}" alt="{{ person.full_name }}">{% else %}Rasm yo'q{% endif %}
+        {% if person.photo %}<img src="{{ person.photo.url }}" alt="{{ person.full_name }}" width="400" height="600">{% else %}Rasm yo'q{% endif %}
     </div>
     <div class="person-info">
         <h1>{{ person.full_name }}</h1>

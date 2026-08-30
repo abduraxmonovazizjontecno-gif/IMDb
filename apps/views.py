@@ -1,7 +1,5 @@
 import logging
 
-from django.views.decorators.cache import cache_page
-from django.utils.decorators import method_decorator
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import login

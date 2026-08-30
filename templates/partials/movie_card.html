@@ -5,7 +5,7 @@
                 <picture>
                     {% if movie.poster_avif %}<source type="image/avif" srcset="{{ movie.poster_avif }}">{% endif %}
                     {% if movie.poster_webp %}<source type="image/webp" srcset="{{ movie.poster_webp }}">{% endif %}
-                    <img src="{{ movie.poster.url }}" alt="{{ movie.title }}" loading="lazy">
+                    <img src="{{ movie.poster.url }}" alt="{{ movie.title }}" loading="lazy" width="500" height="750">
                 </picture>
             {% else %}
                 <span class="poster-mono">{{ movie.title|first|upper }}</span>

@@ -133,28 +133,38 @@
         </div>
 
         <section class="rating-box" aria-label="Kino bahosi">
-            <div class="rating-title">
-                Kino baholang{% if user_rating %}<span class="your-rating">&#9733; Sizning bahoyingiz: {{ user_rating }}/10</span>{% endif %}
+            <div class="rating-box-head">
+                <div class="rating-title">
+                    Kino baholang
+                    {% if user_rating %}<span class="your-rating" id="your-rating">&#9733; Sizning bahoyingiz: <b>{{ user_rating }}</b>/10</span>{% endif %}
+                </div>
+                <div class="rating-avg" id="rating-avg" {% if not movie.rating %}hidden{% endif %}>
+                    {% if movie.rating %}<span class="avg-star">&#9733;</span> <b>{{ movie.rating }}</b>
+                    <span class="avg-count">(<span id="rating-count">{{ movie.rating_count }}</span> ovoz)</span>{% endif %}
+                </div>
             </div>
-            <div class="rating-note">
+            <p class="rating-note">
                 {% if user.is_authenticated %}
-                    {% if user_rating %}Bahoyingizni o'zgartirishingiz mumkin.{% else %}1 dan 10 gacha bahoningizni bering.{% endif %}
+                    {% if user_rating %}Bahoyingiz saqlandi. O‘zgartirishingiz mumkin.{% else %}Yulduzchalarni bosib, 1 dan 10 gacha baho qoldingiz.{% endif %}
                 {% else %}
                     Kino baholash uchun avval <a href="{% url 'login' %}" style="color: var(--accent);">kiring</a>.
                 {% endif %}
-            </div>
+            </p>
             {% if user.is_authenticated %}
-            <form method="post" action="{% url 'rate_movie' movie.slug %}" id="rating-form">
+            <form method="post" action="{% url 'rate_movie' movie.slug %}" id="rating-form" class="rating-form">
                 {% csrf_token %}
-                <div class="stars" id="stars" role="radiogroup" aria-label="Bahoning tanlangan sanasi">
+                <div class="stars" id="stars" role="radiogroup" aria-label="{{ movie.title }} filmini 1 dan 10 gacha baholang">
                     {% for i in range10 %}
-                    <label class="star" data-value="{{ i }}">
-                        <input type="radio" name="value" value="{{ i }}" {% if user_rating == i %}checked{% endif %} role="radio" aria-label="{{ i }} star">
+                    <label class="star" data-value="{{ i }}" title="{{ i }}/10">
+                        <input type="radio" name="value" value="{{ i }}" {% if user_rating == i %}checked{% endif %} aria-label="{{ i }} yulduz">
                         <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg>
                     </label>
                     {% endfor %}
                 </div>
-                <button type="submit" class="btn btn-primary">Baholashni saqlash</button>
+                <div class="rating-actions">
+                    <span class="rating-hint" id="rating-hint" aria-live="polite">Yulduzchani tanlang</span>
+                    <button type="submit" class="btn btn-primary btn-sm" id="rating-submit">Baholashni saqlash</button>
+                </div>
             </form>
             {% endif %}
         </section>
@@ -332,50 +342,79 @@
         revealEls.forEach(function (el) { el.classList.add('in-view'); });
     }
 
-    // --- star rating ---
-    var stars = document.querySelectorAll('.stars .star');
+    // --- star rating (professional) ---
+    var stars = document.querySelectorAll('#stars .star');
     if (stars.length) {
         var form = document.getElementById('rating-form');
+        var hint = document.getElementById('rating-hint');
+        var submitBtn = document.getElementById('rating-submit');
+        var yourRating = document.getElementById('your-rating');
+        var ratingAvg = document.getElementById('rating-avg');
+        var LABELS = ['', 'Juda yomon', 'Yomon', 'Yoqmadi', 'Oddiy', 'Yaxshi', 'Yaxshi', 'Juda yaxshi', 'Ajoyib', 'Shox asar', 'Dahshatli'];
+
         function apply(upTo) {
             stars.forEach(function (s, i) { s.classList.toggle('filled', upTo !== null && i < upTo); });
         }
-        function applyChecked() {
-            var checked = form.querySelector('input[name="value"]:checked');
-            apply(checked ? parseInt(checked.value, 10) : null);
+        function checkedValue() {
+            var c = form.querySelector('input[name="value"]:checked');
+            return c ? parseInt(c.value, 10) : null;
         }
-        stars.forEach(function (s) {
-            s.addEventListener('mouseenter', function () { apply(parseInt(s.dataset.value, 10)); });
-            s.addEventListener('click', function () {
-                s.querySelector('input').checked = true;
-                apply(parseInt(s.dataset.value, 10));
-            });
-        });
-        form.addEventListener('mouseleave', applyChecked);
-        applyChecked();
-
-        form.addEventListener('submit', function (e) {
-            e.preventDefault();
-            var data = new FormData(form);
-            var btn = form.querySelector('button[type="submit"]');
-            btn.classList.add('is-loading');
+        function syncHint() {
+            var v = checkedValue();
+            if (hint) hint.textContent = v ? (v + '/10 — ' + LABELS[v]) : 'Yulduzchani tanlang';
+        }
+        function save(value) {
+            var data = new FormData();
+            data.append('value', value);
+            submitBtn.classList.add('is-loading');
             fetch(form.getAttribute('action'), {
                 method: 'POST',
                 body: data,
-                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': form.querySelector('[name=csrfmiddlewaretoken]').value,
+                }
             }).then(function (r) {
-                if (r.redirected || !r.ok) { window.location.reload(); return null; }
+                if (!r.ok) { window.location.reload(); return null; }
                 return r.json();
             }).then(function (j) {
-                btn.classList.remove('is-loading');
-                if (!j) return;
+                submitBtn.classList.remove('is-loading');
+                if (!j || !j.ok) {
+                    if (window.cinemaToast) cinemaToast('Xatolik yuz berdi, qayta urinib ko\'ring');
+                    return;
+                }
                 apply(j.value);
-                var yr = document.querySelector('.your-rating');
-                if (yr) { yr.textContent = '\u2605 Sizning bahoyingiz: ' + j.value + '/10'; }
-                var note = form.parentElement.querySelector('.rating-note');
-                if (note) { note.textContent = 'Bahoyingizni o\'zgartirishingiz mumkin.'; }
+                if (yourRating) {
+                    yourRating.innerHTML = '&#9733; Sizning bahoyingiz: <b>' + j.value + '</b>/10';
+                }
+                if (ratingAvg) {
+                    ratingAvg.hidden = false;
+                    ratingAvg.innerHTML = '<span class="avg-star">&#9733;</span> <b>' + j.rating + '</b> <span class="avg-count">(<span id="rating-count">' + j.rating_count + '</span> ovoz)</span>';
+                }
                 if (window.cinemaToast) cinemaToast('Bahoyingiz saqlandi \u2605 ' + j.value + '/10');
-            }).catch(function () { btn.classList.remove('is-loading'); });
+            }).catch(function () { submitBtn.classList.remove('is-loading'); });
+        }
+
+        stars.forEach(function (s) {
+            s.addEventListener('mouseenter', function () {
+                apply(parseInt(s.dataset.value, 10));
+                if (hint) hint.textContent = s.dataset.value + '/10 — ' + LABELS[s.dataset.value];
+            });
+            s.addEventListener('click', function () {
+                s.querySelector('input').checked = true;
+                apply(parseInt(s.dataset.value, 10));
+                syncHint();
+                save(parseInt(s.dataset.value, 10));
+            });
         });
+        form.addEventListener('mouseleave', function () { apply(checkedValue()); syncHint(); });
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+            var v = checkedValue();
+            if (v) save(v);
+        });
+        apply(checkedValue());
+        syncHint();
     }
 
     // --- watchlist ---
@@ -389,7 +428,10 @@
             fetch(wlForm.getAttribute('action'), {
                 method: 'POST',
                 body: data,
-                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': wlForm.querySelector('[name=csrfmiddlewaretoken]').value,
+                }
             }).then(function (r) {
                 if (r.redirected || !r.ok) { window.location.reload(); return null; }
                 return r.json();
@@ -489,7 +531,7 @@ var openBtn = document.querySelector('[data-open-video]');
             loading(true);
             errorBox.hidden = true;
             clearTimeout(failTimer);
-            failTimer = setTimeout(onFail, 20000);
+            failTimer = setTimeout(onFail, 10000);
 
             var isIframeEmbed = /youtube\.com|youtu\.be|vidsrc|imdb\.com/i.test(url);
 

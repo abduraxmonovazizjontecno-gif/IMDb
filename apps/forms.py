@@ -48,7 +48,7 @@ class RegisterForm(forms.ModelForm):
             try:
                 phone_regex(phone)
             except Exception as e:
-                raise forms.ValidationError(str(e))
+                raise forms.ValidationError(str(e)) from e
         return phone
 
     def save(self, commit=True):

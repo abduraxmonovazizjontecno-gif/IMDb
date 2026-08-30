@@ -12,7 +12,7 @@
   "screenshots": [
     {
       "src": "/static/favicon.svg",
-      "sizes": "192x192",
+      "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any"
     }
@@ -47,15 +47,5 @@
       "url": "/leaderboard/?source=pwa",
       "icons": [{ "src": "/static/favicon.svg", "sizes": "any", "type": "image/svg+xml" }]
     }
-  ],
-  "share_target": {
-    "action": "/share/",
-    "method": "POST",
-    "enctype": "multipart/form-data",
-    "params": {
-      "title": "title",
-      "text": "text",
-      "url": "url"
-    }
-  }
+  ]
 }

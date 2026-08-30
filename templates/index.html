@@ -84,7 +84,7 @@
         <div class="banner-thumbs" role="tablist" aria-label="Slayd ko'rsatkichlari">
             {% for movie in banners %}
             <button type="button" class="banner-thumb {% if forloop.first %}active{% endif %}" data-index="{{ forloop.counter0 }}" role="tab" aria-label="{{ movie.title }}" aria-selected="{% if forloop.first %}true{% else %}false{% endif %}">
-                <img src="{{ movie.poster.url }}" alt="{{ movie.title }}" loading="lazy">
+                <img src="{{ movie.poster.url }}" alt="{{ movie.title }}" loading="lazy" width="120" height="180">
             </button>
             {% endfor %}
         </div>
